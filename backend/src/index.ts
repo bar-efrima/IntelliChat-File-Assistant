@@ -56,11 +56,11 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
         let fileContent = '';
 
         // Handle different file types
-        if (req.file.mimetype === 'application/pdf') {
+        if (req.file.mimetype === 'application/pdf') { // Check if the file is a PDF
             const fileBuffer = await fs.readFile(filePath);
             const pdfData = await pdfParse(fileBuffer);
             fileContent = pdfData.text;
-        } else if (
+        } else if ( 
             req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ) {
             const fileBuffer = await fs.readFile(filePath);
