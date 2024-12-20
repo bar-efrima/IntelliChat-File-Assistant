@@ -1,5 +1,6 @@
 import React from 'react';
 import TestCommunication from './components/TestCommunication';
+import FileUpload from './components/FileUpload';
 
 const App: React.FC = () => {
   return (
@@ -7,6 +8,7 @@ const App: React.FC = () => {
       
       <h1>IntelliChat File Assistant</h1>
       <TestCommunication />
+      <FileUpload />
     </div>
   );
 };
