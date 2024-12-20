@@ -1,14 +1,14 @@
 import React from 'react';
-import './App.css';
+import TestCommunication from './components/TestCommunication';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="App">
-            <p>
-            <h1>IntelliChat File Assistant</h1>
-        </p>
+    <div>
+      
+      <h1>IntelliChat File Assistant</h1>
+      <TestCommunication />
     </div>
   );
-}
+};
 
 export default App;
