@@ -1,22 +1,23 @@
 import express, { Request, Response } from 'express';
-import cors from 'cors';
-import multer from 'multer';
-import path from 'path';
-import { promises as fs } from 'fs';
-import * as fsSync from 'fs'; 
-import mammoth from 'mammoth';
-import pdfParse from 'pdf-parse';
-
+import cors from 'cors'; // library for enabling CORS
+import multer from 'multer'; // library for handling file uploads
+import path from 'path'; 
+import { promises as fs } from 'fs'; // library for handling file system operations
+import * as fsSync from 'fs';  // asynchronous file system operations
+import mammoth from 'mammoth'; // library for parsing Word documents
+import pdfParse from 'pdf-parse'; // library for parsing PDF documents
+import computeCosineSimilarity from 'compute-cosine-similarity'; // library for computing cosine similarity
 import dotenv from 'dotenv';
-import OpenAI from 'openai';
+import OpenAI from 'openai'; // library for interacting with the OpenAI API
 
 dotenv.config();
+
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || '',
 });
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const app = express(); // Initialize Express app, Node.js web application framework
+const PORT = process.env.PORT || 5000; // Port number for the server
 
 // Middleware
 app.use(cors()); // Enable CORS for all requests
@@ -51,7 +52,18 @@ app.get('/test', (req: Request, res: Response) => {
     res.json({ message: 'Backend is working!' });
 });
 
+// Global memory for embeddings and chunks
+const embeddingsStore: { embeddings: number[][]; chunks: string[] } = {
+    embeddings: [],
+    chunks: [],
+};
+
+
 // File upload endpoint
+/* 
+    This endpoint accepts a file upload and parses the file content based on the file type.
+    Supported file types: PDF, DOCX
+*/
 app.post('/upload', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
     if (!req.file) {
         res.status(400).json({ message: 'No file uploaded' });
@@ -61,63 +73,163 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
     const filePath = req.file.path;
 
     try {
+        console.log(`Received file: ${req.file.originalname} (${req.file.mimetype})`);
         let fileContent = '';
-
-        // Handle different file types
+        
+        /* Handle different file types */
         if (req.file.mimetype === 'application/pdf') { // Check if the file is a PDF
+            console.log('Parsing PDF file...');
             const fileBuffer = await fs.readFile(filePath);
             const pdfData = await pdfParse(fileBuffer);
             fileContent = pdfData.text;
-        } else if ( 
-            req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        ) {
+            console.log('PDF parsing completed. Extracted content:');
+            console.log(fileContent.slice(0, 500)); // Log the first 500 characters
+        } 
+        // Check if the file is a Word document
+        else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') { 
+            console.log('Parsing Word document...');
             const fileBuffer = await fs.readFile(filePath);
             const wordData = await mammoth.extractRawText({ buffer: fileBuffer });
             fileContent = wordData.value;
+            console.log('Word document parsing completed. Extracted content:');
+            console.log(fileContent.slice(0, 500)); // Log the first 500 characters
         } else {
+            console.log('Unsupported file type.');
             res.status(400).json({ message: 'Unsupported file type' });
             return;
         }
     
-        const chunkSize = 500;
-        const chunks = fileContent.match(new RegExp(`.{1,${chunkSize}}`, 'g')) || [];
+        const chunkSize = 500; // Split the file content into chunks of 500 characters
+        const chunks = fileContent.match(new RegExp(`.{1,${chunkSize}}`, 'g')) || []; 
+        console.log(`File content split into ${chunks.length} chunks.`);
 
+        // Generate embeddings for each chunk
+        console.log('Generating embeddings...');
+        const embeddings = await Promise.all(
+            chunks.map(async (chunk, index) => {
+                try {
+                    console.log(`Embedding chunk ${index + 1}/${chunks.length}`);
+                    console.log(`Chunk content: ${chunk.slice(0, 100)}...`); // Log the first 100 characters of the chunk
+                    const response = await openai.embeddings.create({
+                        model: 'text-embedding-ada-002',
+                        input: chunk,
+                    });
+                    console.log(`Embedding generated for chunk ${index + 1}`);
+                    console.log(`Embedding: ${response.data[0].embedding.slice(0, 10)}...`); // Log the first 10 dimensions of the embedding
+                    return response.data[0].embedding;
+                } catch (error) {
+                    console.error(`Error embedding chunk ${index + 1}:`, error);
+                    throw error; // Re-throw the error to ensure it’s handled properly
+                }
+            })
+        );
 
-        res.status(200).json({
-            message: 'File uploaded successfully',
-            // filename: req.file.filename,
-            // path: req.file.path,
-            chunks,
-        });
+        // Store embeddings and chunks in memory
+        embeddingsStore.embeddings = embeddings;
+        embeddingsStore.chunks = chunks;
+
+        res.status(200).json({ message: `${req.file.originalname} uploaded and processed successfully. You can now ask questions about this file.` });
     } catch (error) {
         console.error('Error parsing file:', error);
         res.status(500).json({ message: 'Error parsing file' });
     }
 });
 
-app.post('/embed', async (req: Request, res: Response): Promise<void> => {
-    const { chunks } = req.body;
 
-    if (!chunks || !Array.isArray(chunks)) {
-        res.status(400).json({ message: 'Chunks are required and should be an array' });
-        return; // Exit early to avoid further execution
+// Embedding endpoint
+/* 
+    This endpoint generates embeddings for text chunks and stores them in memory.
+    The embeddings are generated using the OpenAI Text Embedding model.
+*/
+// app.post('/embed', async (req: Request, res: Response): Promise<void> => {
+//     const { chunks } = req.body;
+
+//     if (!chunks || !Array.isArray(chunks)) {
+//         res.status(400).json({ message: 'Chunks are required and should be an array' });
+//         return;
+//     }
+
+//     try {
+//         const embeddings = await Promise.all(
+//             chunks.map(async (chunk: string) => {
+//                 const response = await openai.embeddings.create({
+//                     model: 'text-embedding-ada-002', // model for generating text embeddings
+//                     input: chunk,
+//                 });
+//                 return response.data[0].embedding; // Access the embedding vector
+//             })
+//         );
+
+//         // Store embeddings and chunks in memory
+//         embeddingsStore.embeddings = embeddings; 
+//         embeddingsStore.chunks = chunks;
+
+//         res.status(200).json({ embeddings });
+//     } catch (error) {
+//         console.error('Error generating embeddings:', error);
+//         res.status(500).json({ message: 'Error generating embeddings' });
+//     }
+// });
+
+// Chat endpoint
+/* 
+    This endpoint processes a user's question, computes the similarity between the question
+    and stored text chunks, and generates a response using the OpenAI GPT model.
+*/
+app.post('/chat', async (req: Request, res: Response): Promise<void> => {
+    const { question } = req.body;
+
+    if (!question) {
+        res.status(400).json({ message: 'Question is required' });
+        return;
     }
 
     try {
-        const embeddings = await Promise.all(
-            chunks.map(async (chunk: string) => {
-                const response = await openai.embeddings.create({
-                    model: 'text-embedding-ada-002',
-                    input: chunk,
-                });
-                return response.data[0].embedding; // Ensure correct access
-            })
-        );
+        // Generate embedding for the question
+        const questionEmbeddingResponse = await openai.embeddings.create({
+            model: 'text-embedding-ada-002',
+            input: question,
+        });
+        // Extract the embedding vector from the response
+        const questionEmbedding = questionEmbeddingResponse.data[0].embedding; 
 
-        res.status(200).json({ embeddings });
+        // Compute similarity between question embedding and stored embeddings
+        const similarities = embeddingsStore.embeddings.map((embedding, index) => ({
+            chunk: embeddingsStore.chunks[index],
+            similarity: computeCosineSimilarity(questionEmbedding, embedding),
+        }));
+
+        // Sort chunks by similarity in descending order
+        const sortedChunks = similarities
+        .filter((item) => item.similarity !== null && item.similarity !== undefined) // Filter out null or undefined
+        .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0)) // Use null-coalescing
+        .slice(0, 3); // Take top 3 most relevant chunks
+
+
+        // Generate response using OpenAI GPT model
+        const context = sortedChunks.map((item) => item.chunk).join('\n');
+        const gptResponse = await openai.chat.completions.create({
+            model: 'gpt-3.5-turbo',
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are a helpful assistant that strictly answers questions based only on the provided context. 
+                              `
+                },
+                {
+                    role: 'user',
+                    content: `Answer the question based on the following context:\n\n${context}\n\nQuestion: ${question}`
+                },
+            ]
+        });
+        
+        // Safely extract the content of the first choice
+        const answer = gptResponse.choices?.[0]?.message?.content || 'No response generated';
+
+        res.status(200).json({ answer, relevantChunks: sortedChunks });
     } catch (error) {
-        console.error('Error generating embeddings:', error);
-        res.status(500).json({ message: 'Error generating embeddings' });
+        console.error('Error processing chat request:', error);
+        res.status(500).json({ message: 'Error processing chat request' });
     }
 });
 
