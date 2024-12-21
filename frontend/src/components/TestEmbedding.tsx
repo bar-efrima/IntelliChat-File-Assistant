@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Chat from './ChatInterface';
 
 const TestEmbedding: React.FC = () => {
     const [file, setfile] = useState<File | null>(null); 
@@ -100,6 +101,10 @@ const TestEmbedding: React.FC = () => {
           </ul>
         </div>
       )}
+      {/* {embedding.length > 0 && (
+    <Chat embeddings={embedding} chunks={chunks} />
+    )} */}
+
     </div>
   );
 };

@@ -58,11 +58,49 @@ const embeddingsStore: { embeddings: number[][]; chunks: string[] } = {
     chunks: [],
 };
 
+// Function to split text into semantic chunks
+/*
+    This function splits text into semantic chunks based on the number of words.
+    It ensures that sentences are not split across chunks and that each chunk is within the word limit.
+ */
+
+function splitIntoSemanticChunks(text: string, maxWords: number): string[] {
+    const paragraphs = text.split(/\n+/); // Split text by paragraphs
+    const chunks: string[] = [];
+    let currentChunk: string[] = [];
+    let wordCount = 0;
+
+    paragraphs.forEach((paragraph) => {
+        const sentences = paragraph.split(/(?<=[.!?])\s+/); // split a string based on punctuation marks followed by whitespac
+        sentences.forEach((sentence) => {
+            const sentenceWords = sentence.split(/\s+/).length; // Count words in the sentence
+            if (wordCount + sentenceWords <= maxWords) { // Check if adding the sentence exceeds the word limit
+                currentChunk.push(sentence);
+                wordCount += sentenceWords;
+            } else {
+                if (currentChunk.length > 0) { 
+                    chunks.push(currentChunk.join(' ')); // Combine sentences into a chunk
+                }
+                currentChunk = [sentence];
+                wordCount = sentenceWords;
+            }
+        });
+    });
+
+    // Add the last chunk if it has content
+    if (currentChunk.length > 0) {
+        chunks.push(currentChunk.join(' '));
+    }
+
+    return chunks;
+}
+
 
 // File upload endpoint
 /* 
-    This endpoint accepts a file upload and parses the file content based on the file type.
-    Supported file types: PDF, DOCX
+    This endpoint accepts a file upload and processes the file to extract its content.
+    The content is split into semantic chunks and embeddings are generated for each chunk.
+    The embeddings and chunks are stored in memory for later use.
 */
 app.post('/upload', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
     if (!req.file) {
@@ -99,9 +137,10 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
             return;
         }
     
-        const chunkSize = 500; // Split the file content into chunks of 500 characters
-        const chunks = fileContent.match(new RegExp(`.{1,${chunkSize}}`, 'g')) || []; 
-        console.log(`File content split into ${chunks.length} chunks.`);
+        // Split the file content into semantic chunks
+        const maxWordsPerChunk = 300; // Maximum number of words per chunk
+        const chunks = splitIntoSemanticChunks(fileContent, maxWordsPerChunk);
+        console.log(`File content split into ${chunks.length} semantic chunks.`);
 
         // Generate embeddings for each chunk
         console.log('Generating embeddings...');
@@ -109,7 +148,7 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
             chunks.map(async (chunk, index) => {
                 try {
                     console.log(`Embedding chunk ${index + 1}/${chunks.length}`);
-                    console.log(`Chunk content: ${chunk.slice(0, 100)}...`); // Log the first 100 characters of the chunk
+                    console.log(`Chunk content: ${chunk}`); // Log the first 100 characters of the chunk
                     const response = await openai.embeddings.create({
                         model: 'text-embedding-ada-002',
                         input: chunk,
@@ -128,53 +167,17 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
         embeddingsStore.embeddings = embeddings;
         embeddingsStore.chunks = chunks;
 
-        res.status(200).json({ message: `${req.file.originalname} uploaded and processed successfully. You can now ask questions about this file.` });
+        res.status(200).json({ message: `File uploaded and processed successfully. You can now ask questions about ${req.file.originalname}.` });
     } catch (error) {
         console.error('Error parsing file:', error);
         res.status(500).json({ message: 'Error parsing file' });
     }
 });
 
-
-// Embedding endpoint
-/* 
-    This endpoint generates embeddings for text chunks and stores them in memory.
-    The embeddings are generated using the OpenAI Text Embedding model.
-*/
-// app.post('/embed', async (req: Request, res: Response): Promise<void> => {
-//     const { chunks } = req.body;
-
-//     if (!chunks || !Array.isArray(chunks)) {
-//         res.status(400).json({ message: 'Chunks are required and should be an array' });
-//         return;
-//     }
-
-//     try {
-//         const embeddings = await Promise.all(
-//             chunks.map(async (chunk: string) => {
-//                 const response = await openai.embeddings.create({
-//                     model: 'text-embedding-ada-002', // model for generating text embeddings
-//                     input: chunk,
-//                 });
-//                 return response.data[0].embedding; // Access the embedding vector
-//             })
-//         );
-
-//         // Store embeddings and chunks in memory
-//         embeddingsStore.embeddings = embeddings; 
-//         embeddingsStore.chunks = chunks;
-
-//         res.status(200).json({ embeddings });
-//     } catch (error) {
-//         console.error('Error generating embeddings:', error);
-//         res.status(500).json({ message: 'Error generating embeddings' });
-//     }
-// });
-
 // Chat endpoint
-/* 
-    This endpoint processes a user's question, computes the similarity between the question
-    and stored text chunks, and generates a response using the OpenAI GPT model.
+/*
+    This endpoint accepts a question and generates a response based on the context provided by the most relevant chunks.
+    The response is generated using the OpenAI GPT model.
 */
 app.post('/chat', async (req: Request, res: Response): Promise<void> => {
     const { question } = req.body;

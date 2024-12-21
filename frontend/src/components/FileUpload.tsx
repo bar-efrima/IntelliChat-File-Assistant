@@ -1,36 +1,42 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const FileUpload: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null); // The type for file objects
-  const [uploadMessage, setUploadMessage] = useState<string>('');
+interface FileUploadProps {
+  onFileProcessed: () => void; // Callback to notify parent when the file is processed
+}
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => { // The type for file input change events
-    if (event.target.files && event.target.files.length > 0) { // Check if files were selected
-      setFile(event.target.files[0]); // Set the first file in the list
+const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed }) => {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploadMessage, setUploadMessage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setFile(event.target.files[0]);
     }
   };
 
- 
-  const handleUpload = async () => { // async function for uploading files
+  const handleUpload = async () => {
     if (!file) {
-      alert('Please select a file to upload.');  // Alert the user if no file was selected
+      alert('Please select a file to upload.');
       return;
     }
 
-    const formData = new FormData(); // create a formdata object (allows to combine form data to send in an HTTP request)
-    formData.append('file', file); // append the file to the form data
+    setIsLoading(true); // Show loading state
+    const formData = new FormData();
+    formData.append('file', file);
 
     try {
       const response = await axios.post('http://localhost:5000/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data', 
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setUploadMessage(response.data.message); // reponse message from the backend
+      setUploadMessage(response.data.message);
+      onFileProcessed(); // Notify parent that processing is complete
     } catch (error) {
-      console.error('Error uploading file:', error); 
+      console.error('Error uploading file:', error);
       setUploadMessage('File upload failed.');
+    } finally {
+      setIsLoading(false); // Hide loading state
     }
   };
 
@@ -39,10 +45,13 @@ const FileUpload: React.FC = () => {
       <h2>Upload a File</h2>
       <input
         type="file"
-        onChange={handleFileChange} // Call the handleFileChange function when the file input changes
+        onChange={handleFileChange}
         accept=".pdf,.doc,.docx"
+        disabled={isLoading}
       />
-      <button onClick={handleUpload}>Upload</button>
+      <button onClick={handleUpload} disabled={isLoading}>
+        {isLoading ? 'Processing...' : 'Upload'}
+      </button>
       {uploadMessage && <p>{uploadMessage}</p>}
     </div>
   );
