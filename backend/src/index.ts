@@ -7,6 +7,14 @@ import * as fsSync from 'fs';
 import mammoth from 'mammoth';
 import pdfParse from 'pdf-parse';
 
+import dotenv from 'dotenv';
+import OpenAI from 'openai';
+
+dotenv.config();
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || '',
+});
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -84,6 +92,32 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
     } catch (error) {
         console.error('Error parsing file:', error);
         res.status(500).json({ message: 'Error parsing file' });
+    }
+});
+
+app.post('/embed', async (req: Request, res: Response): Promise<void> => {
+    const { chunks } = req.body;
+
+    if (!chunks || !Array.isArray(chunks)) {
+        res.status(400).json({ message: 'Chunks are required and should be an array' });
+        return; // Exit early to avoid further execution
+    }
+
+    try {
+        const embeddings = await Promise.all(
+            chunks.map(async (chunk: string) => {
+                const response = await openai.embeddings.create({
+                    model: 'text-embedding-ada-002',
+                    input: chunk,
+                });
+                return response.data[0].embedding; // Ensure correct access
+            })
+        );
+
+        res.status(200).json({ embeddings });
+    } catch (error) {
+        console.error('Error generating embeddings:', error);
+        res.status(500).json({ message: 'Error generating embeddings' });
     }
 });
 
