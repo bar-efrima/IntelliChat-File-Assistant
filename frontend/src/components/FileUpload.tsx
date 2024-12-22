@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import '../styles/FileUpload.css'; // Import the CSS module
 
 interface FileUploadProps {
   onFileProcessed: () => void; // Callback to notify parent when the file is processed
@@ -41,18 +42,25 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed }) => {
   };
 
   return (
-    <div>
-      <h2>Upload a File</h2>
+    <div className="file-upload-container">
+      <div className="file-upload-header">
+        <h2>Upload a File</h2>
+      </div>
       <input
+        className="file-upload-input"
         type="file"
         onChange={handleFileChange}
         accept=".pdf,.doc,.docx"
         disabled={isLoading}
       />
-      <button onClick={handleUpload} disabled={isLoading}>
+      <button
+        className="file-upload-button"
+        onClick={handleUpload}
+        disabled={isLoading}
+      >
         {isLoading ? 'Processing...' : 'Upload'}
       </button>
-      {uploadMessage && <p>{uploadMessage}</p>}
+      {uploadMessage && <p className="file-upload-message">{uploadMessage}</p>}
     </div>
   );
 };

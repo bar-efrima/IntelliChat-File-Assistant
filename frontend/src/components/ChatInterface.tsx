@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import '../styles/ChatInterface.css'; // Import the CSS module
 
 interface ChatInterfaceProps {
   isEnabled: boolean; // Whether the chat is enabled
@@ -32,57 +33,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isEnabled }) => {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h1>Chat Interface</h1>
+    <div className="chat-container">
+      <h1 className="chat-header">Chat Interface</h1>
 
-      <div
-        style={{
-          border: '1px solid #ccc',
-          padding: '10px',
-          marginBottom: '10px',
-          height: '300px',
-          overflowY: 'auto',
-          backgroundColor: '#f9f9f9',
-        }}
-      >
+      <div className="chat-history">
         {messages.map((msg, index) => (
           <div
             key={index}
-            style={{
-              textAlign: msg.role === 'user' ? 'right' : 'left',
-              margin: '5px 0',
-            }}
+            className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}
           >
             <strong>{msg.role === 'user' ? 'You' : 'Assistant'}:</strong> {msg.content}
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: '10px' }}>
+      <div className="chat-controls">
         <input
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder={isEnabled ? 'Type your question here...' : 'Upload a file to enable chat'}
           disabled={!isEnabled}
-          style={{
-            flex: 1,
-            padding: '10px',
-            border: '1px solid #ccc',
-            borderRadius: '5px',
-          }}
+          className="chat-input"
         />
         <button
           onClick={handleSend}
           disabled={!isEnabled}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: isEnabled ? '#007BFF' : '#ccc',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: isEnabled ? 'pointer' : 'not-allowed',
-          }}
+          className={`chat-button ${!isEnabled ? 'disabled' : ''}`}
         >
           Send
         </button>

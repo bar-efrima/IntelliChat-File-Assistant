@@ -3,6 +3,7 @@ import TestCommunication from './components/TestCommunication';
 import FileUpload from './components/FileUpload';
 import TestEmbedding from './components/TestEmbedding';
 import ChatInterface from './components/ChatInterface';
+import './App.css';
 
 const App: React.FC = () => {
   const [isChatEnabled, setIsChatEnabled] = useState<boolean>(false);
@@ -13,7 +14,9 @@ const App: React.FC = () => {
 
   return (
     <div>
-      <h1>IntelliChat File Assistant</h1>
+      <div className="file-assistant-title">
+      <p>IntelliChat File Assistant</p>
+      </div>
       <FileUpload onFileProcessed={handleFileProcessed} />
       <ChatInterface isEnabled={isChatEnabled} />
     </div>

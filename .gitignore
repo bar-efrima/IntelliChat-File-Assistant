@@ -17,6 +17,9 @@ backend/node_modules/
 frontend/build/
 backend/dist/
 
+# Uploads
+backend/src/uploads
+
 # Environment variables
 *.env
 
