@@ -34,7 +34,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isEnabled }) => {
 
   return (
     <div className="chat-container">
-      <h1 className="chat-header">Chat Interface</h1>
+      {/* <h1 className="chat-header">Chat Interface</h1> */}
 
       <div className="chat-history">
         {messages.map((msg, index) => (

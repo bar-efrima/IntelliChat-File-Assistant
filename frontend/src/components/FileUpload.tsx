@@ -44,7 +44,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed }) => {
   return (
     <div className="file-upload-container">
       <div className="file-upload-header">
-        <h2>Upload a File</h2>
+        {/* <h2>Upload a File</h2> */}
       </div>
       <input
         className="file-upload-input"

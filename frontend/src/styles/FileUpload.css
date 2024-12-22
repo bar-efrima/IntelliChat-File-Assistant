@@ -9,23 +9,33 @@
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 20px;
-    color: white;
+    /* color:#F72FD1; */
   }
   
   .file-upload-input {
     display: block;
+    width: 100%;
     margin: 10px auto;
     padding: 10px;
+    font-family: 'Chillax', sans-serif;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 1em;
+  }
+    
+  .file-upload-label.disabled {
+    background-color: rgba(56, 8, 8, 0.591);
+    cursor: not-allowed;
   }
   
   .file-upload-button {
+    font-size: 17px;
+    font-weight: 500;
+    font-family: 'Chillax', sans-serif;
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #F72FD1;
     color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 1em;
     cursor: pointer;
     margin-top: 10px;
   }

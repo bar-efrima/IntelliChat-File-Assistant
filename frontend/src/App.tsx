@@ -15,7 +15,8 @@ const App: React.FC = () => {
   return (
     <div>
       <div className="file-assistant-title">
-      <p>IntelliChat File Assistant</p>
+        
+      IntelliChat<span className="pink-text"> File Assistant</span> 
       </div>
       <FileUpload onFileProcessed={handleFileProcessed} />
       <ChatInterface isEnabled={isChatEnabled} />
