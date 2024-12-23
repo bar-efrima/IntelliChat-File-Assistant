@@ -11,7 +11,6 @@ This project is a Full Stack GenAI-powered application for uploading, processing
 4. **Interactive Chat**: Enables questions based on uploaded content.
 
 ## Tech Stack
----
 ### **Frontend**
 - **React.js**: Client-side framework for building interactive user interfaces.
 - **TypeScript**: Strongly typed language for React components and application logic.
@@ -30,7 +29,7 @@ This project is a Full Stack GenAI-powered application for uploading, processing
 - **Postman**: For testing and debugging API endpoints.
 - **dotenv**: For managing environment variables securely.
 - **compute-cosine-similarity**: For comparing embeddings.
----
+
 
 ## Demo
 ![Screenshot of the App](frontend/src/styles/assets/screenshot.jpg)
@@ -73,7 +72,6 @@ This project is a Full Stack GenAI-powered application for uploading, processing
 5. **Access the app**:
    Open your browser and navigate to `http://localhost:3000`.
 
----
 
 ## Usage
 1. **Upload Files**:
@@ -84,14 +82,12 @@ This project is a Full Stack GenAI-powered application for uploading, processing
    - Once processing is complete, the chat interface becomes active.
    - Ask questions about the uploaded content and get responses.
 
----
 
 ## How It Works
 1. **Parsing**: Extracts text from files and splits it into logical chunks.
 2. **Indexing**: Generates embeddings for chunks using OpenAI.
 3. **Querying**: Matches user questions with relevant chunks and generates responses using GPT.
 
----
 
 ## Credits
 
