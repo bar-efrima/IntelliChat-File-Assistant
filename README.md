@@ -1,5 +1,5 @@
 
-**IntelliChat File Assistant** 
+# IntelliChat File Assistant 
 This project is a Full Stack GenAI-powered application for uploading, processing, and interacting with file content. Users can upload files, parse their content into chunks, index them using embeddings, and ask questions via an interactive chat interface.
 
 ---
