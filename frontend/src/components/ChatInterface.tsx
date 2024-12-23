@@ -40,9 +40,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isEnabled }) => {
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`}
+            className={`chat-message ${msg.role === 'user' ? 'user' : 'assistant'}`} 
           >
-            <strong>{msg.role === 'user' ? 'You' : 'Assistant'}:</strong> {msg.content}
+            <strong>{msg.role === 'user' ? 'You' : 'Assistant'}:</strong> {msg.content} 
           </div>
         ))}
       </div>

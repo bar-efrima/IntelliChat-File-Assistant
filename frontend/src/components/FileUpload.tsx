@@ -32,7 +32,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed }) => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setUploadMessage(response.data.message);
-      onFileProcessed(); // Notify parent that processing is complete
+      onFileProcessed(); // Notify parent that processing is complete so we can enable chat
     } catch (error) {
       console.error('Error uploading file:', error);
       setUploadMessage('File upload failed.');
@@ -44,23 +44,30 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed }) => {
   return (
     <div className="file-upload-container">
       <div className="file-upload-header">
-        {/* <h2>Upload a File</h2> */}
+        {/* Optional header */}
       </div>
-      <input
-        className="file-upload-input"
-        type="file"
-        onChange={handleFileChange}
-        accept=".pdf,.doc,.docx"
-        disabled={isLoading}
-      />
-      <button
-        className="file-upload-button"
-        onClick={handleUpload}
-        disabled={isLoading}
-      >
-        {isLoading ? 'Processing...' : 'Upload'}
-      </button>
+      <div className="file-upload">
+        <label htmlFor="file-upload" className="custom-file-upload">
+          {file ? file.name : 'Choose File'}
+        </label>
+        <input
+          id="file-upload"
+          className="file-upload-input"
+          type="file"
+          onChange={handleFileChange}
+          accept=".pdf,.doc,.docx"
+          disabled={isLoading}
+        />
+        <button
+          className="file-upload-button"
+          onClick={handleUpload}
+          disabled={isLoading || !file} 
+        >
+          {isLoading ? 'Processing...' : 'Process'}
+        </button>
+      </div>
       {uploadMessage && <p className="file-upload-message">{uploadMessage}</p>}
+      
     </div>
   );
 };

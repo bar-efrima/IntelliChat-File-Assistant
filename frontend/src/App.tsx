@@ -5,6 +5,7 @@ import TestEmbedding from './components/TestEmbedding';
 import ChatInterface from './components/ChatInterface';
 import './App.css';
 
+
 const App: React.FC = () => {
   const [isChatEnabled, setIsChatEnabled] = useState<boolean>(false);
 
@@ -14,9 +15,9 @@ const App: React.FC = () => {
 
   return (
     <div>
-      <div className="file-assistant-title">
-        
+      <div className="file-assistant-title">  
       IntelliChat<span className="pink-text"> File Assistant</span> 
+      <p> Ask questions and get key takeaways from your documents with generative AI</p>
       </div>
       <FileUpload onFileProcessed={handleFileProcessed} />
       <ChatInterface isEnabled={isChatEnabled} />

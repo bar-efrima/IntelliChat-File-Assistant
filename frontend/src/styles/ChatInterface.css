@@ -4,10 +4,6 @@
     margin: 0 auto;
   }
   
-  .chat-header {
-    font-size: 24px;
-    font-weight: bold;
-  }
   
   .chat-history {
     /* border: 1px solid #ccc; */
@@ -21,6 +17,8 @@
   
   .chat-message {
     margin: 5px 0;
+    padding-left: 20px;
+    padding-right: 20px;
   }
   
   .chat-message.user {
@@ -38,6 +36,7 @@
   
   .chat-input {
     flex: 1;
+    font-family: 'Chillax', sans-serif;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -45,7 +44,7 @@
   
   .chat-button {
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #F72FD1;
     color: #fff;
     border: none;
     border-radius: 5px;

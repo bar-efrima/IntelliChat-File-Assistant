@@ -71,7 +71,7 @@ function splitIntoSemanticChunks(text: string, maxWords: number): string[] {
     let wordCount = 0;
 
     paragraphs.forEach((paragraph) => {
-        const sentences = paragraph.split(/(?<=[.!?])\s+/); // split a string based on punctuation marks followed by whitespac
+        const sentences = paragraph.split(/(?<=[.!?])\s+/); // split the text based on punctuation marks followed by whitespace
         sentences.forEach((sentence) => {
             const sentenceWords = sentence.split(/\s+/).length; // Count words in the sentence
             if (wordCount + sentenceWords <= maxWords) { // Check if adding the sentence exceeds the word limit
@@ -81,7 +81,7 @@ function splitIntoSemanticChunks(text: string, maxWords: number): string[] {
                 if (currentChunk.length > 0) { 
                     chunks.push(currentChunk.join(' ')); // Combine sentences into a chunk
                 }
-                currentChunk = [sentence];
+                currentChunk = [sentence]; // Start a new chunk with the current sentence
                 wordCount = sentenceWords;
             }
         });
@@ -104,7 +104,7 @@ function splitIntoSemanticChunks(text: string, maxWords: number): string[] {
 */
 app.post('/upload', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
     if (!req.file) {
-        res.status(400).json({ message: 'No file uploaded' });
+        // res.status(400).json({ message: 'No file uploaded' });
         return; // Ensure we exit after sending the response
     }
 
@@ -148,7 +148,7 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
             chunks.map(async (chunk, index) => {
                 try {
                     console.log(`Embedding chunk ${index + 1}/${chunks.length}`);
-                    console.log(`Chunk content: ${chunk}`); // Log the first 100 characters of the chunk
+                    console.log(`Chunk content: ${chunk}`); 
                     const response = await openai.embeddings.create({
                         model: 'text-embedding-ada-002',
                         input: chunk,
@@ -167,7 +167,7 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
         embeddingsStore.embeddings = embeddings;
         embeddingsStore.chunks = chunks;
 
-        res.status(200).json({ message: `File uploaded and processed successfully. You can now ask questions about ${req.file.originalname}.` });
+        res.status(200).json({ message: `File uploaded and processed successfully.`+`\n`+ `\n You can now ask questions about ${req.file.originalname}.` });
     } catch (error) {
         console.error('Error parsing file:', error);
         res.status(500).json({ message: 'Error parsing file' });

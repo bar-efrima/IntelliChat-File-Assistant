@@ -18,7 +18,7 @@
     margin: 10px auto;
     padding: 10px;
     font-family: 'Chillax', sans-serif;
-    border: 1px solid #ccc;
+    border: 2px solid #A0A1A1;
     border-radius: 1em;
   }
     
@@ -28,6 +28,7 @@
   }
   
   .file-upload-button {
+    width: 40%;
     font-size: 17px;
     font-weight: 500;
     font-family: 'Chillax', sans-serif;
@@ -37,7 +38,7 @@
     border: none;
     border-radius: 1em;
     cursor: pointer;
-    margin-top: 10px;
+    margin-left: 10px;
   }
   
   .file-upload-button:disabled {
@@ -48,6 +49,94 @@
   .file-upload-message {
     margin-top: 15px;
     font-size: 16px;
-    color: #28a745;
+    color: #242424;
+  }
+  
+  .file-upload{
+    /* file upload contains the upload button adn the choose file button, we will allign them next to each other */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+  }
+
+  .file-upload-container {
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .file-upload-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .file-upload {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .custom-file-upload {
+    display: inline-block;
+    font-family: 'Chillax', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: #fff;
+    background-color: #F72FD1;
+    width: 200px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    border: none;
+    border-radius: 2em;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  .custom-file-upload:hover {
+    background-color: #303439;
+  }
+  
+  .custom-file-upload:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .file-upload-input {
+    display: none; /* Hides the native input */
+  }
+  
+  .file-upload-button {
+    font-size: 17px;
+    font-weight: 500;
+    font-family: 'Chillax', sans-serif;
+    width: 200px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    background-color: #303439;
+    color: #fff;
+    border: none;
+    border-radius: 2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .file-upload-button:hover {
+    background-color: #F72FD1;
+  }
+  
+  .file-upload-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .file-upload-message {
+    margin-top: 15px;
+    font-size: 16px;
+    color: #242424;
   }
   
