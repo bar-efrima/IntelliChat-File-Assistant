@@ -167,7 +167,7 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
         embeddingsStore.embeddings = embeddings;
         embeddingsStore.chunks = chunks;
 
-        res.status(200).json({ message: `File uploaded and processed successfully.`+`\n`+ `\n You can now ask questions about ${req.file.originalname}.` });
+        res.status(200).json({ message: `File uploaded and processed successfully. You can now ask questions about ${Buffer.from(req.file.originalname, 'latin1').toString('utf8')}.` });
     } catch (error) {
         console.error('Error parsing file:', error);
         res.status(500).json({ message: 'Error parsing file' });
