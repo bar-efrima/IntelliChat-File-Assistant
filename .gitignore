@@ -20,6 +20,9 @@ backend/dist/
 # Uploads
 backend/src/uploads
 
+# Testing
+frontend/src/components/tests
+
 # Environment variables
 *.env
 

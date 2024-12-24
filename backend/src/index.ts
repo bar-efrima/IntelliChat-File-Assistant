@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
-import cors from 'cors'; // library for enabling CORS
+import cors from 'cors'; 
 import multer from 'multer'; // library for handling file uploads
-import path from 'path'; 
-import { promises as fs } from 'fs'; // library for handling file system operations
+import path from 'path'; // library for handling file paths 
+import { promises as fs } from 'fs'; // library for handling file system operations 
 import * as fsSync from 'fs';  // asynchronous file system operations
 import mammoth from 'mammoth'; // library for parsing Word documents
 import pdfParse from 'pdf-parse'; // library for parsing PDF documents
@@ -24,9 +24,9 @@ app.use(cors()); // Enable CORS for all requests
 app.use(express.json()); // Enable JSON body parsing for all requests
 
 // Create uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, 'uploads'); // Path to the uploads directory
+const uploadDir = path.join(__dirname, 'uploads'); // Path to the uploads directory 
 if (!fsSync.existsSync(uploadDir)) {
-    fsSync.mkdirSync(uploadDir); // Use synchronous method
+    fsSync.mkdirSync(uploadDir); 
 }
 
 // Configure Multer for file uploads
@@ -35,7 +35,8 @@ const storage = multer.diskStorage({
         cb(null, uploadDir); // Save files to the uploads directory
     },
     filename: (req, file, cb) => {
-        const uniqueName = `${Date.now()}-${file.originalname}`;
+        const safeName = Buffer.from(file.originalname, 'latin1').toString('utf8'); // Convert to UTF-8
+        const uniqueName = `${Date.now()}-${safeName}`; 
         cb(null, uniqueName); // Generate a unique name for the file
     },
 });
@@ -47,10 +48,10 @@ app.get('/', (req: Request, res: Response) => {
     res.send('IntelliChat Backend is running!');
 });
 
-// Test endpoint
-app.get('/test', (req: Request, res: Response) => {
-    res.json({ message: 'Backend is working!' });
-});
+// // Test endpoint
+// app.get('/test', (req: Request, res: Response) => {
+//     res.json({ message: 'Backend is working!' });
+// });
 
 // Global memory for embeddings and chunks
 const embeddingsStore: { embeddings: number[][]; chunks: string[] } = {
@@ -104,7 +105,6 @@ function splitIntoSemanticChunks(text: string, maxWords: number): string[] {
 */
 app.post('/upload', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
     if (!req.file) {
-        // res.status(400).json({ message: 'No file uploaded' });
         return; // Ensure we exit after sending the response
     }
 
@@ -116,12 +116,9 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
         
         /* Handle different file types */
         if (req.file.mimetype === 'application/pdf') { // Check if the file is a PDF
-            console.log('Parsing PDF file...');
             const fileBuffer = await fs.readFile(filePath);
             const pdfData = await pdfParse(fileBuffer);
             fileContent = pdfData.text;
-            console.log('PDF parsing completed. Extracted content:');
-            console.log(fileContent.slice(0, 500)); // Log the first 500 characters
         } 
         // Check if the file is a Word document
         else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') { 
@@ -129,10 +126,7 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
             const fileBuffer = await fs.readFile(filePath);
             const wordData = await mammoth.extractRawText({ buffer: fileBuffer });
             fileContent = wordData.value;
-            console.log('Word document parsing completed. Extracted content:');
-            console.log(fileContent.slice(0, 500)); // Log the first 500 characters
         } else {
-            console.log('Unsupported file type.');
             res.status(400).json({ message: 'Unsupported file type' });
             return;
         }
@@ -140,21 +134,15 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
         // Split the file content into semantic chunks
         const maxWordsPerChunk = 300; // Maximum number of words per chunk
         const chunks = splitIntoSemanticChunks(fileContent, maxWordsPerChunk);
-        console.log(`File content split into ${chunks.length} semantic chunks.`);
 
         // Generate embeddings for each chunk
-        console.log('Generating embeddings...');
         const embeddings = await Promise.all(
             chunks.map(async (chunk, index) => {
                 try {
-                    console.log(`Embedding chunk ${index + 1}/${chunks.length}`);
-                    console.log(`Chunk content: ${chunk}`); 
                     const response = await openai.embeddings.create({
                         model: 'text-embedding-ada-002',
                         input: chunk,
                     });
-                    console.log(`Embedding generated for chunk ${index + 1}`);
-                    console.log(`Embedding: ${response.data[0].embedding.slice(0, 10)}...`); // Log the first 10 dimensions of the embedding
                     return response.data[0].embedding;
                 } catch (error) {
                     console.error(`Error embedding chunk ${index + 1}:`, error);
@@ -168,6 +156,7 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
         embeddingsStore.chunks = chunks;
 
         res.status(200).json({ message: `File uploaded and processed successfully. You can now ask questions about ${Buffer.from(req.file.originalname, 'latin1').toString('utf8')}.` });
+    
     } catch (error) {
         console.error('Error parsing file:', error);
         res.status(500).json({ message: 'Error parsing file' });
@@ -180,7 +169,8 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response): 
     The response is generated using the OpenAI GPT model.
 */
 app.post('/chat', async (req: Request, res: Response): Promise<void> => {
-    const { question } = req.body;
+    
+    const question = req.body.question;
 
     if (!question) {
         res.status(400).json({ message: 'Question is required' });
@@ -205,7 +195,7 @@ app.post('/chat', async (req: Request, res: Response): Promise<void> => {
         // Sort chunks by similarity in descending order
         const sortedChunks = similarities
         .filter((item) => item.similarity !== null && item.similarity !== undefined) // Filter out null or undefined
-        .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0)) // Use null-coalescing
+        .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0)) // Sort by similarity in descending order
         .slice(0, 3); // Take top 3 most relevant chunks
 
 
@@ -227,7 +217,7 @@ app.post('/chat', async (req: Request, res: Response): Promise<void> => {
         });
         
         // Safely extract the content of the first choice
-        const answer = gptResponse.choices?.[0]?.message?.content || 'No response generated';
+        const answer = gptResponse.choices?.[0]?.message?.content || 'No response generated'; // handle the case where the response is undefined
 
         res.status(200).json({ answer, relevantChunks: sortedChunks });
     } catch (error) {
