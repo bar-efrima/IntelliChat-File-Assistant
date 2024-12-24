@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import '../styles/ChatInterface.css'; // Import the CSS module
+import '../styles/ChatInterface.css'; 
 
 interface ChatInterfaceProps {
   isEnabled: boolean; // Whether the chat is enabled
@@ -11,31 +11,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isEnabled }) => {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
 
   const handleSend = async () => {
-    if (!question.trim()) {
+    if (!question.trim()) { // Check if the question is empty or only contains whitespace
       alert('Please type a question.');
       return;
     }
 
-    setMessages((prev) => [...prev, { role: 'user', content: question }]);
-    setQuestion('');
+    setMessages((prevMessages) => {
+      return prevMessages.concat({ role: 'user', content: question });
+    });
+
+    setQuestion(''); // Clear the input box
 
     try {
       const response = await axios.post('http://localhost:5000/chat', { question });
       const answer = response.data.answer || 'No response received.';
-      setMessages((prev) => [...prev, { role: 'assistant', content: answer }]);
+      setMessages((prevMessages) => {
+        return prevMessages.concat({ role: 'assistant', content: answer });
+      });
     } catch (error) {
       console.error('Error in chat:', error);
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: 'Sorry, something went wrong.' },
-      ]);
+      setMessages((prevMessages) => 
+        prevMessages.concat({ role: 'assistant', content: 'Sorry, something went wrong.' })
+      );
     }
   };
 
   return (
     <div className="chat-container">
-      {/* <h1 className="chat-header">Chat Interface</h1> */}
-
       <div className="chat-history">
         {messages.map((msg, index) => (
           <div

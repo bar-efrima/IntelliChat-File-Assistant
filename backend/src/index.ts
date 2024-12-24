@@ -48,11 +48,6 @@ app.get('/', (req: Request, res: Response) => {
     res.send('IntelliChat Backend is running!');
 });
 
-// // Test endpoint
-// app.get('/test', (req: Request, res: Response) => {
-//     res.json({ message: 'Backend is working!' });
-// });
-
 // Global memory for embeddings and chunks
 const embeddingsStore: { embeddings: number[][]; chunks: string[] } = {
     embeddings: [],

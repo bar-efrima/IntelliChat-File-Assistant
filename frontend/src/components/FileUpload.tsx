@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import '../styles/FileUpload.css'; // Import the CSS module
+import '../styles/FileUpload.css'; 
 
 interface FileUploadProps {
   onFileProcessed: () => void; // Callback to notify parent when the file is processed
@@ -11,12 +11,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed }) => {
   const [uploadMessage, setUploadMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  // Handle file selection 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       setFile(event.target.files[0]);
     }
   };
 
+  // Handle file upload
   const handleUpload = async () => {
     if (!file) {
       alert('Please select a file to upload.');
@@ -31,6 +33,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed }) => {
       const response = await axios.post('http://localhost:5000/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+
       setUploadMessage(response.data.message);
       onFileProcessed(); // Notify parent that processing is complete so we can enable chat
     } catch (error) {
@@ -43,9 +46,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed }) => {
 
   return (
     <div className="file-upload-container">
-      <div className="file-upload-header">
-        {/* Optional header */}
-      </div>
       <div className="file-upload">
         <label htmlFor="file-upload" className="custom-file-upload">
           {file ? file.name : 'Choose File'}

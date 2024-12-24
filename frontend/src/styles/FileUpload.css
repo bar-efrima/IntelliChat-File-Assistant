@@ -5,13 +5,7 @@
     text-align: center;
   }
   
-  .file-upload-header {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    /* color:#F72FD1; */
-  }
-  
+
   .file-upload-input {
     display: block;
     width: 100%;
